@@ -1,6 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 
-// Initialize the S3 client for Liara Object Storage
 export const s3Client = new S3Client({
     region: 'us-east-1',
     endpoint: process.env.LIARA_OBJECT_STORAGE_URL,
@@ -8,7 +7,7 @@ export const s3Client = new S3Client({
         accessKeyId: process.env.LIARA_ACCESS_KEY,
         secretAccessKey: process.env.LIARA_SECRET_KEY,
     },
-    forcePathStyle: true,  // Important for Liara's S3-compatible API
+    forcePathStyle: true,
 });
 
 export async function uploadFile(fileName, fileBuffer) {

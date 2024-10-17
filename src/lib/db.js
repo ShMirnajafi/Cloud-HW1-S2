@@ -1,11 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 
-// Initialize the database connection
 const sql = neon(process.env.DATABASE_URL);
 
-/**
- * Ensure the `requests` table exists with the necessary fields.
- */
 export async function ensureTableExists() {
     try {
         await sql`
