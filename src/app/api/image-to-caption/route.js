@@ -18,7 +18,7 @@ export async function GET() {
                 // Fetch the image from Liara Object Storage using S3 client
                 const getObjectParams = {
                     Bucket: process.env.LIARA_BUCKET_NAME,
-                    Key: imageUrl.split('/').pop(),  // Extract filename from image URL
+                    Key: imageUrl.split('/').pop(),
                 };
 
                 const image = await s3Client.send(new GetObjectCommand(getObjectParams));
