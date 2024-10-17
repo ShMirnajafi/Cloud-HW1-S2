@@ -8,7 +8,7 @@ export async function publishToQueue(queue, message) {
         const channel = await connection.createChannel();
         await channel.assertQueue(queue, { durable: true });
         channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
-        console.log(`Message sent to queue ${queue}:`, JSON.stringify(message, null, 2));  // Log the message
+        console.log(`Message sent to queue ${queue}:`, JSON.stringify(message, null, 2));
         await channel.close();
         await connection.close();
     } catch (error) {
@@ -26,7 +26,7 @@ export async function consumeQueue(queue, callback) {
         channel.consume(queue, async (msg) => {
             if (msg !== null) {
                 const messageContent = JSON.parse(msg.content.toString());
-                console.log(`Message received:`, JSON.stringify(messageContent, null, 2));  // Pretty-print the message
+                console.log(`Message received:`, JSON.stringify(messageContent, null, 2));
                 await callback(messageContent);
                 channel.ack(msg);
             }
