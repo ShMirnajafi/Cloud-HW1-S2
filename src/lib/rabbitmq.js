@@ -1,6 +1,7 @@
 import amqplib from 'amqplib';
 
 const CLOUDAMQP_URL = process.env.CLOUDAMQP_URL;
+console.log(CLOUDAMQP_URL)
 
 export async function publishToQueue(queue, message) {
     try {
@@ -18,6 +19,7 @@ export async function publishToQueue(queue, message) {
 }
 
 export async function consumeQueue(queue, callback) {
+    console.log(`Try to listen of queue: ${queue}`)
     try {
         const connection = await amqplib.connect(CLOUDAMQP_URL);
         const channel = await connection.createChannel();
