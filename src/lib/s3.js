@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 
 export const s3Client = new S3Client({
     region: 'us-east-1',
@@ -9,18 +9,6 @@ export const s3Client = new S3Client({
     },
     forcePathStyle: true,
 });
-
-export async function uploadFile(fileName, fileBuffer) {
-    const uploadParams = {
-        Bucket: process.env.LIARA_BUCKET_NAME,
-        Key: fileName,
-        Body: fileBuffer,
-    };
-
-    await s3Client.send(new PutObjectCommand(uploadParams));
-
-    return `${process.env.LIARA_OBJECT_STORAGE_URL}/${process.env.LIARA_BUCKET_NAME}/${fileName}`;
-}
 
 export async function fetchFile(fileName) {
     const getObjectParams = {
