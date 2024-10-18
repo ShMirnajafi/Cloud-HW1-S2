@@ -10,8 +10,8 @@ const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
 export async function GET() {
     try {
-        consumeQueue('image_processing', async (messageContent) => {
-            const { requestId, imageUrl } = messageContent;
+        await consumeQueue('image_processing', async (messageContent) => {
+            const {requestId, imageUrl} = messageContent;
             try {
                 console.log(`Received task for request ID: ${requestId}`);
 
@@ -58,7 +58,8 @@ export async function GET() {
                 // Update the request status and caption in the database
                 await sql`
                     UPDATE requests
-                    SET status = 'ready', image_caption = ${caption}
+                    SET status        = 'ready',
+                        image_caption = ${caption}
                     WHERE id = ${requestId}
                 `;
 
