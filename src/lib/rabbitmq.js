@@ -1,7 +1,7 @@
 import amqplib from 'amqplib';
 
 const CLOUDAMQP_URL = process.env.CLOUDAMQP_URL;
-console.log(CLOUDAMQP_URL)
+console.log(CLOUDAMQP_URL);
 
 export async function publishToQueue(queue, message) {
     try {
@@ -19,22 +19,32 @@ export async function publishToQueue(queue, message) {
 }
 
 export async function consumeQueue(queue, callback) {
-    console.log(`Try to listen of queue: ${queue}`)
+    console.log(`Try to listen to queue: ${queue}`);
     try {
         const connection = await amqplib.connect(CLOUDAMQP_URL);
         const channel = await connection.createChannel();
         await channel.assertQueue(queue, { durable: true });
 
-        channel.consume(queue, async (msg) => {
-            if (msg !== null) {
-                const messageContent = JSON.parse(msg.content.toString());
-                console.log(`Message received:`, JSON.stringify(messageContent, null, 2));
-                await callback(messageContent);
-                channel.ack(msg);
-            }
+        const message = await new Promise((resolve) => {
+            channel.consume(queue, (msg) => {
+                if (msg !== null) {
+                    const messageContent = JSON.parse(msg.content.toString());
+                    console.log(`Message received:`, JSON.stringify(messageContent, null, 2));
+                    resolve({ msg, messageContent });
+                } else {
+                    resolve(null);
+                }
+            });
         });
 
-        console.log(`Listening on queue: ${queue}`);
+        if (message) {
+            await callback(message.messageContent);
+            channel.ack(message.msg);
+        }
+
+        await channel.close();
+        await connection.close();
+        console.log('RabbitMQ connection closed.');
     } catch (error) {
         console.error('Error connecting to RabbitMQ:', error);
         throw error;
