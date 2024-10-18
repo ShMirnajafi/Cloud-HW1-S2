@@ -8,10 +8,11 @@ import { consumeQueue } from '@/lib/rabbitmq';
 const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large';
 const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
-export async function GET() {
+async function processQueue() {
     try {
+        console.log('Listening for image processing tasks...');
         await consumeQueue('image_processing', async (messageContent) => {
-            const {requestId, imageUrl} = messageContent;
+            const { requestId, imageUrl } = messageContent;
             try {
                 console.log(`Received task for request ID: ${requestId}`);
 
@@ -26,10 +27,8 @@ export async function GET() {
 
                 console.log(`Image fetched for request ID: ${requestId}`);
 
-                // Base64-encode the image buffer
                 const base64Image = imageBuffer.toString('base64');
 
-                // Send the image to Hugging Face API for captioning
                 const response = await fetch(HUGGINGFACE_API_URL, {
                     method: 'POST',
                     headers: {
@@ -37,16 +36,14 @@ export async function GET() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        inputs: base64Image,  // Send the base64-encoded image
+                        inputs: base64Image,
                     }),
                 });
 
                 const captionData = await response.json();
 
-                // Log the Hugging Face API response
                 console.log('Hugging Face API response:', JSON.stringify(captionData, null, 2));
 
-                // Extract the generated caption from the response
                 const caption = captionData[0]?.generated_text;
 
                 if (!caption) {
@@ -55,7 +52,6 @@ export async function GET() {
 
                 console.log(`Generated caption for request ID: ${requestId}: ${caption}`);
 
-                // Update the request status and caption in the database
                 await sql`
                     UPDATE requests
                     SET status        = 'ready',
@@ -73,10 +69,11 @@ export async function GET() {
                 `;
             }
         });
-
-        return new Response('Service Two is listening for image processing tasks');
     } catch (error) {
-        console.error('Error in service two:', error);
-        return new Response('Error occurred', { status: 500 });
+        console.error('Error in processing queue:', error);
     }
 }
+
+setInterval(processQueue, 10000);
+
+processQueue();
